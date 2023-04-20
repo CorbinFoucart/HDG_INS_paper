@@ -1,0 +1,226 @@
+
+\section{Introduction}
+
+
+In \cite{fehn_robust_2018}, the authors investigate the stability and robustness of DG discretizations of several projection methods. They compare fully-implicit, high-order dual splitting \cite{karniadakis_high-order_1991}, and pressure-correction schemes, but weirdly discretize the advection term implicitly for the pressure-correction, making the system nonlinear. So not exactly a fair comparison, since solving a nonlinear problem defeats the purpose of a projection method.
+
+The numerical experiments in \cite{fehn_robust_2018} suggest that the high-order, dual splitting scheme 
+
+
+\subsection{Incompressible Navier--Stokes}
+\begin{equation}
+  \begin{aligned}
+  \frac{\partial \bm{u}}{\partial t} 
+    + \nabla \cdot \left(\bm{u} \otimes \bm{u}\right) 
+    - \nabla \cdot \left(\nu \nabla\bm{u}\right)
+    + \nabla p = \bm{f} & \qquad \text{ on } \Omega \times [0,T] \\
+    \nabla \cdot \bm{u} = 0 & \qquad  \text{ on } \Omega \times [0,T]
+  \end{aligned}
+  \label{eq:INS}
+\end{equation}
+
+Th incompressible Navier--stokes equations are subject to the initial condition
+\begin{equation}
+  \bm{u}(\bm{x},t=0) = \bm{u}_0 \text{ on } \Omega,
+\end{equation}
+where $\bm{u}_0$ is divergence-free. We denote the outward-facing unit normal vector as $\bm{n}$.  On the boundary $\Gamma$, we prescribe Dirichlet and Neumann conditions on $\Gamma_D$ and $\Gamma_N$, respectively, such that $\Gamma_D \cup \Gamma_N = \Gamma$.  
+\begin{eqnarray}
+  \bm{u} &= \bm{g}_D^u & \text{ on } \Gamma_D \times [0,T] \\ 
+  \left(\bm{F}_v\left(\bm{u}\right) - p\bm{I}\right)\cdot\bm{n} &= \bm{g}_N^{\text{stress}} & \text{ on } \Gamma_D \times [0,T] 
+\end{eqnarray}
+Where $\bm{F}_v(\bm{u})$ is a representation of the viscous flux, usually given as $\bm{F}_v(\bm{u})=\nu \nabla \bm{u}$. The operator splitting associated with projection methods will necessitate splitting the boundary condition as well, so we decompose the stress condition into viscous and pressure components $\bm{g}_N^{\text{stress}} = \bm{g}_N^u - g_N^p\bm{n}$ and prescribe them separately, following \cite{fehn_robust_2018},
+\begin{eqnarray}
+  \bm{F}_v(\bm{u}) \cdot\bm{n} &= \bm{g}_N^u & \text{ on } \Gamma_N, \\
+  p &= g_N^p & \text{ on } \Gamma_N.
+\end{eqnarray}
+
+We use the Rothe method, handling the temporal discretization and operator splitting before spatial discretization. For time integration, we apply backward differentiation formula (BDF) for all schemes in this paper.
+
+\section{Projection methods}%
+
+An overview of the temporal discretization and operator splitting for pressure-correction schemes is given in \cite{guermond_overview_2006}. Results from \cite{guermond_overview_2006}: (1) under certain smoothness requirements on the solution, the nonlinear advection term in the Navier--Stokes equations does not affect the convergence rates of the splitting errors, and they treat it explicitly. 
+
+\subsubsection{Velocity predictor step}
+An intermediate predictor velocity $\bar{\bm{u}}$ is calculated by solving the momentum equation with an explicit extrapolation of the pressure gradient term and explicit treatment of the advection term
+\begin{equation}
+\frac{ \beta_s \bar{\bm{u}} - \sum_{i=0}^{s_u-1}\left(\beta_i \bm{u}^{n-i}\right) }{\Delta t} 
+- \nabla \cdot \left(\nu \nabla \bar{\bm{u}}\right) 
+= - \sum_{i=0}^{s_p-1}\left(\gamma_i\nabla p^{n-i}\right) 
+- \nabla \cdot \left(\bm{u}^n\otimes \bm{u}^n\right) 
++ \bm{f}(t_{n+1}),
+\label{eq:PDE_velocity_predictor}
+\end{equation}
+where the boundary conditions for the predictor velocity are 
+\begin{align}
+  \begin{aligned}
+  \bar{\bm{u}} &= \bm{g}_D^u(t_{n+1}) & \text{ on } \Gamma_D, \\
+  \left(\nu \nabla \bar{\bm{u}}\right) \cdot \bm{n} &= \bm{g}_N^u(t_{n+1}) & \text{ on } \Gamma_N.
+  \end{aligned}
+  \label{eq:VP_BCs}
+\end{align}
+
+\subsubsection{Pressure corrector step}
+The second step involves computing a correction $\delta p^{k+1}$ to the pressure by solving 
+\begin{equation}
+  -\nabla^2 \delta p^{k+1} = - \frac{\beta_s}{\Delta t} \nabla \cdot \bar{\bm{u}},
+  \label{eq:PC_presure_poisson}
+\end{equation}
+subject to the boundary conditions
+\begin{eqnarray}
+    \nabla \delta p^{n+1} \cdot \bm{n} = 0 & \text{ on } \Gamma_D, \\
+    \delta p^{n+1} = g_p(t_{n+1}) 
+    - \sum_{i=0}^{s_p-1}\left(\beta_i g_p(t_{n-i})\right) & \text{ on }  \Gamma_N.
+\label{eq:PDE_pressure_corrector}
+\end{eqnarray}
+
+The pressure Poisson equation (\ref{eq:PC_presure_poisson}) is obtained by
+writing the intermediate velocity $\bar{\bm{u}}$ in terms of a Helmholtz
+decomposition consisting of a solenoidal component $\bm{u}$ (since $\nabla \cdot
+\bm{u}= 0$) and irrotational component $\nabla \delta p^{n+1}$,
+\begin{eqnarray}
+  \frac{\beta_s}{\Delta t} \bm{u}^{n+1} + \nabla \delta p^{n+1} =
+  \frac{\beta_s}{\Delta t} \bar{\bm{u}}, \label{eq:PC:helmholtz} \\
+  \delta p^{n+1} = p^{n+1} 
+    - \sum_{i=0}^{s_p-1}\left(\beta_i p^{n-i}\right) 
+    + \chi \nu \nabla \cdot \bar{\bm{u}},
+\end{eqnarray}
+then taking the divergence of equation (\ref{eq:PC:helmholtz}), making use of the divergence-free constraint $\nabla \cdot \bm{u}^{n+1} = 0 $. Taking $\chi=0$ corresponds to the standard formulation and $\chi=1$ the rotational formulation of the method, respectively \cite{guermond_overview_2006}. We consider the rotational formulation hereafter.  
+
+\subsubsection{Projection step}
+In the third step, the velocity $\bm{u}^{n+1}$ and pressure $p^{n+1}$ at time $t_{n+1}$ are obtained by performing updates amounting to the projection of $\bar{\bm{u}}$ onto the space of divergence-free vector fields
+
+\begin{align}
+  \bm{u}^{n+1} &= \bar{\bm{u}} - \frac{\Delta t}{\beta_s} \nabla \delta p^{n+1}, \\
+  p^{n+1} &= \sum_{i=0}^{s_p-1} \left(\beta_i p^{n-i}\right) 
+  + \delta p^{n+1} 
+  - \nu \nabla \cdot \bar{\bm{u}},
+\end{align}
+
+Theoretical rates of convergence for the pressure-corrector schemes are given in \cite{guermond_overview_2006}. The authors suggest that schemes are only conditionally stable for $s_p \geq 2$. To ensure unconditional stability, we therefore select $s_u = 2$ and $s_p = 1$. With these choices, the pressure-corrector scheme using the rotational formulation can be expected to be $\Delta t^2$ accurate in the $L^2$-norm of the velocity and $\Delta t^{3/2}$ accurate in the $L^2$-norm of the pressure.
+
+
+\section{Spatial discretization}
+
+\subsection{Notation}
+Boilerplate
+
+\subsection{Finite element spaces}
+boilerplate
+
+\subsection{HDG Pressure-correction scheme}
+
+The choice of spatial discretization for the pressure gradient terms and the velocity divergence term is of central importance to the stability and robustness of the projection schemes in \cite{fehn_robust_2018}. Previous work in \cite{ueckermann_lermusiaux_JCP2016} conducted limited investigation of the discretization of these terms as they appeared in HDG discretizations of projection methods. This motivates the present work in determining whether the discretization of these two terms is similarly important to the robustness of HDG schemes. 
+
+The point of departure for HDG schemes is to write each semi-discretized PDE as a first-order system, which we do for the velocity predictor equation (\ref{eq:PDE_velocity_predictor})  and pressure correction equation (\ref{eq:PDE_pressure_corrector}). The projection step does not require an implicit formulation and is computed directly.
+
+\subsubsection{HDG formulation of explicit operators}
+
+\textit{Pressure gradient terms}. The pressure gradient term can 
+We integrate by parts and replace $p_h$ on the element boundary $\partial K$ with a central numerical flux $p^*_h = \mean{p_h} $. Applying the mean operator definitions on the interior and boundary interfaces separately,
+\begin{equation}
+  \text{pg}_h(\bm{v}, p_h, g_N^p) = -\left(\nabla \cdot \bm{v},\, p_h \right)_{\Th} 
+  + \left\langle \bm{v},\mean{p_h}\bm{n}\right\rangle_{\partial\Th \setminus \Gamma}
+  + \left\langle \bm{v}, g_N^p\bm{n}\right\rangle_{\Gamma_N}
+  + \left\langle \bm{v}, p_h\bm{n}\right\rangle_{\Gamma_D}
+\end{equation}%
+As in Fehn et al., we consider also an alternate reference formulation used in \cite{hesthaven_nodal_2008,ueckermann_lermusiaux_JCP2016}, which does not integrate the pressure gradient by parts,
+\begin{equation}
+  \text{pg}_{h,\text{ref}}(\bm{v}, p_h) = \left(\bm{v},\, \nabla p_h \right)_{\Th} 
+\end{equation}
+
+\textit{Advection term}. The advection term
+\begin{equation}
+  F_a(\bm{v}, \bm{u}_h)
+\end{equation}
+
+\textit{Velocity divergence term}. The HDG formulation of the velocity divergence term pertains to the discretization of terms of the form $\left(w,\, \nabla \cdot \bar{\bm{u}}_h \right)_K$ over an element $K$. Just as for the pressure gradient term, we integrate by parts and replace $\bm{u}_h$ on the element boundary $\partial K$ with a central numerical flux $\bar{\bm{u}}^*_h = \mean{\bar{\bm{u}}_h} $. Applying the mean operator definitions on the interior and boundary interfaces separately,
+\begin{equation}
+\text{vd}_h(w,\bar{\bm{u}}_h, \bm{g}_D^u)  =  (\nabla w,\, \bar{\bm{u}}_h)_{\mathcal{T}_h}
+ + \langle w,\, \mean{\bar{\bm{u}}_h} \cdot\bm{n}\rangle_{\partial\mathcal{T}_h\setminus \Gamma}
+ + \langle w,\, \bar{\bm{u}}_h \cdot\bm{n}\rangle_{\Gamma_N}
+ + \langle w,\, \bm{g}_D^u \cdot\bm{n}\rangle_{\Gamma_D}
+ ,
+\end{equation}
+where we could have taken $\bm{g}_D^u = \bar{\bm{u}}_h$ instead, since this is enforced in equation (\ref{eq:VP_BCs}). Just as for the pressure gradient term, we consider also an alternate reference formulation given in \cite{hesthaven_nodal_2008}, 
+\begin{equation}
+  \text{vd}_{h,\text{ref}}(w,\bar{\bm{u}}_h) = \left(w, \nabla \cdot \bar{\bm{u}}_h \right)_{\Th},
+\end{equation}
+which does not perform integration by parts. 
+
+note: in \cite{ueckermann_lermusiaux_JCP2016}, We integrate by parts another time (equivalent) but take $\widehat{\bar{\bm{u}}}_h^{k+1}$ as the HDG flux from the predictor solve, which may be unsound.
+
+In addition to the form of the terms themselves, HDG methods provide different choices of numerical flux which we have to investigate. Using the HDG fluxes themselves as numerical fluxes for these terms turns out to require quite complicated accounting in order to make sure the scheme stays consistent. Since the HDG flux is in some sense an intermediate quantity designed to allow for static condensation and reduction of globally-coupled degrees of freedom, it makes more sense to avoid using these fluxes elsewhere in the time discretization. Further, storing the fluxes incurs additional memory costs and requires correction \cite{ueckermann_lermusiaux_JCP2016}.
+
+\subsubsection{Velocity predictor}%
+Rewritten as a first-order system, equation (\ref{eq:PDE_velocity_predictor}) takes the form
+\begin{equation}
+  \begin{aligned}
+    \bar{\bm{L}} - \nabla \bm{u} &= 0  \\
+    \frac{ \beta_s \bar{\bm{u}} - \sum_{i=0}^{s_u-1}\left(\beta_i \bm{u}^{n-i}\right) }{\Delta t} 
+    - \nabla \cdot \left(\nu \bar{\bm{L}}\right) 
+    &= - \sum_{i=0}^{s_p-1}\left(\gamma_i\nabla p^{n-i}\right) 
+    - \nabla \cdot \left(\bm{u}^n\otimes \bm{u}^n\right) 
+    + \bm{f}(t_{n+1}),
+  \end{aligned}
+  \label{eq:velocity_predictor_first_order}
+\end{equation}
+where the first equation defines a new tensor-valued unknown $\bar{\bm{L}}$ approximating the velocity gradient $\nabla\bar{\bm{u}}$, and the second is equation (\ref{eq:PDE_velocity_predictor}) written in terms of $\bar{\bm{L}}$.
+Taking the numerical flux definition $\left(-\nu \hat{\bm{\bar{L}}}_h \right)\bm{n} \equiv \left(-\nu \bm{\bar{L}}_h\right)\bm{n} + \tau (\bm{\bar{u}}_h - \hat{\bm{u}}_h)$ and adding an equation to weakly enforce the continuity of its normal component on the space $M_h^p$ \cite{nguyen_hybridizable_2010,nguyen_implicit_2011}, we arrive at the following weak form
+
+The velocity predictor $\bar{\bm{u}}_h$
+\begin{equation}
+  \begin{aligned}
+    ( \bm{G} ,\, \bm{\bar{L}}_h)_{\Th} 
+    + ( \nabla \cdot \bm{G} ,\, \bm{\bar{u}}_h)_{\Th} 
+   - \langle \bm{G}\cdot\bm{n} ,\, \hat{\bm{u}}_h \rangle_{\partial \Th} &=0 \\
+   \left( \bm{v} ,\, \frac{\beta_s}{\Delta t} \bar{\bm{u}} \right)_{\Th}
+    - \left( \bm{v} ,\, \nabla \cdot  \left(\nu \bm{\bar{L}}_h\right) \right)_{\Th}
+    + \langle \bm{v} ,\, \tau \left(\bm{\bar{u}}_h - \hat{\bm{u}}_h\right) \rangle_{\partial \Th}
+    &= \left(\bm{v},\,  \sum_{i=0}^{s_u-1}\left(\frac{\beta_i}{\Delta t}  \bm{u}^{n-i}\right) \right)_{\Th} \\
+     - \sum_{i=0}^{s_p-1}\left(\gamma_i\,\text{pg}_h(\bm{v}, p_h^{n-i},g^p_N(t_{n-i}))\right) 
+    &+ F_a(\bm{v},\bm{u}_h)
+    + (\bm{v},\, \bm{f})_{\Th} \\
+    \left\langle \bm{\mu} ,\, (-\nu \bar{\bm{L}}_h)\bm{n} + \tau(\bar{\bm{u}}_h - \hat{\bm{u}}_h) \right\rangle_{\partial \mathcal{T}_h \setminus \Gamma_D} 
++ \left\langle \bm{\mu} ,\, \widehat{b}_h \right\rangle_{\Gamma_N} &= 0
+  \end{aligned}
+\end{equation}
+This differs from the scheme in \cite{ueckermann_lermusiaux_JCP2016}, which takes the jump of the pressure in the numerical flux.
+
+This admits a matrix-discretization over each element:
+\begin{equation}
+  \begin{bmatrix}
+   A   &  B & -C \\
+   B^T &  -D & E \\
+   -N & G &  -H
+  \end{bmatrix}
+  \begin{bmatrix} L_h \\ U_h \\ \widehat{U}_h \end{bmatrix}
+  =
+  \begin{bmatrix} 0 \\ -(F - P) \\ -L \end{bmatrix}.
+\end{equation}
+
+\subsubsection{Pressure corrector}%
+The weak form for the pressure corrector can be expressed as 
+\begin{equation}
+\begin{aligned}
+(\bm{v},\,  \bm{q}_{\delta p}^{k+1})_{\mathcal{T}_h}
++ ( \nabla \cdot \bm{v} ,\, \delta p^{k+1})_{\mathcal{T}_h}
+- \langle \bm{v}\cdot\bm{n} ,\, \widehat{\delta p} \rangle_{\partial \mathcal{T}_h} &= 0 \\
+-(w ,\, \nabla \cdot \bm{q}_{\delta p}^{k+1})_{\mathcal{T}_h}
++ \langle w,\, \tau_p \delta p^{k+1}\rangle_{\partial \mathcal{T}_h} 
+- \langle w,\, \tau_p \widehat{\delta p} \rangle_{\partial \mathcal{T}_h} 
+&= - \frac{\beta_s}{\Delta t} \text{vd}_h(w,\bar{\bm{u}}_h, \bm{g}_D^u(t_{n+1}))  \\
+\left\langle \mu ,\, \bm{q}_{\delta p}^{k+1} \cdot\bm{n} + \tau_p(\delta p^{k+1} - \widehat{\delta p})
+\right\rangle_{\partial \mathcal{T}_h \setminus \Gamma_D} &= 0 
+\end{aligned}
+\end{equation}
+
+
+
+\subsection{Inhomogeneous boundary condition treatment}
+\subsection{Numerical flux definitions}
+
+\section{Discussion}%
+
+The imposition of open boundary conditions where inflow and outflow can co-exist remains an open problem in the finite element community \cite{sani_resume_1994}. 
+
+%%

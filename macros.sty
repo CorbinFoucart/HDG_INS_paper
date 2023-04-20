@@ -1,0 +1,41 @@
+\renewcommand{\(}{\begin{equation}}
+\renewcommand{\)}{\end{equation}}
+\ifpdf
+\DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
+\else
+\DeclareGraphicsExtensions{.eps}
+\fi 
+
+%\newtheorem{lemma}{Lemma}
+%\newtheorem{corollary}{Corollary}
+%\newtheorem{proposition}{Proposition}
+%\newtheorem{theorem}{Theorem}
+%\theoremstyle{definition}
+%\newtheorem{definition}{Definition}
+%\newtheorem{remark}{Remark}
+
+%\crefname{figure}{Figure}{Figs.}
+%\crefname{chapter}{chapter}{chapters}
+%\crefname{equation}{}{}
+
+\newcommand{\Th}{\mathcal{T}_h}
+% DG integrals, jumps 
+\newcommand{\Iint}[3]{\left(#1 ,\, #2 \right)_{#3}}
+\newcommand{\IintK}[2]{\Iint{#1}{#2}{\gls{K}}}
+\newcommand{\Eint}[3]{\left\langle #1 ,\, #2 \right\rangle_{#3}}
+\newcommand{\EintK}[2]{\Eint{#1}{#2}{\partial K}}
+\newcommand{\jmp}[1]{\llbracket #1 \rrbracket}
+\newcommand{\mean}[1]{\left\{\!\left\{#1\right\}\!\right\}}
+\newcommand{\nrml}{\hat{\mathbf n}}
+
+\newcommand{\intk}[1]{\left(#1 \right)_K}
+\newcommand{\intdk}[1]{\left \langle #1 \right \rangle_{\partial K}}
+\DeclareMathOperator{\diag}{diag}
+
+% restriction operator
+\newcommand\restr[2]{{ % we make the whole thing an ordinary symbol
+  \left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+  #1 % the function
+  \vphantom{\big|} % pretend it's a little taller at normal size
+  \right|_{#2} % this is the delimiter
+  }}

@@ -1,0 +1,184 @@
+%% 
+%% Copyright 2007-2020 Elsevier Ltd
+%% 
+%% This file is part of the 'Elsarticle Bundle'.
+%% ---------------------------------------------
+%% 
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%% 
+%% The list of all files belonging to the 'Elsarticle Bundle' is
+%% given in the file `manifest.txt'.
+%% 
+%% Template article for Elsevier's document class `elsarticle'
+%% with harvard style bibliographic references
+
+\documentclass[preprint,10pt,numbers]{elsarticle}
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[authoryear,preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times,authoryear]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn,authoryear]{elsarticle}
+%% \documentclass[final,3p,times,authoryear]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn,authoryear]{elsarticle}
+%% \documentclass[final,5p,times,authoryear]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn,authoryear]{elsarticle}
+
+% imports
+\usepackage[margin=1in]{geometry}
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+% template package imports
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{xcolor}
+\usepackage{hyperref}       % hyperlinks
+\definecolor{BlueLink}{RGB}{15,78, 155}
+\definecolor{lightgray}{gray}{0.9}
+\hypersetup{
+    colorlinks, allcolors=BlueLink
+}
+
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{cleveref}       % smart cross-referencing
+\usepackage{lipsum}         % Can be removed after putting your text content
+\usepackage{graphicx}
+\usepackage{doi}
+%\usepackage{mdframed}       % shaded figures
+\usepackage{framed}      
+\definecolor{shadecolor}{rgb}{0.95,0.95,0.95}
+
+% my package imports
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{bm}       % bolding
+\usepackage{stmaryrd} %jumps, avg
+\usepackage{enumitem} %% removing whitespace for itemize
+\usepackage{wrapfig}
+\usepackage{subcaption}  
+\usepackage{float} % table locations
+
+%tunable policies imports
+\usepackage{dsfont}
+\usepackage{mathrsfs}
+\usepackage{dirtytalk}
+
+%\usepackage{floatrow}
+% \usepackage[belowskip=-30pt,aboveskip=0pt]{caption}
+\setlength{\textfloatsep}{8pt plus 1.0pt minus 2.0pt}
+\setlength{\floatsep}{4pt plus 1.0pt minus 1.0pt}
+\setlength{\intextsep}{5pt plus 1.0pt minus 1.0pt}
+\setlength{\abovecaptionskip}{5pt plus 1pt minus 2pt}
+% \captionsetup[figure]{font=small,skip=-100mm}
+
+\input{macros.sty}
+
+%% The lineno packages adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with \linenumbers.
+%% \usepackage{lineno}
+
+\journal{Journal of Computational Physics}
+
+\begin{document}
+
+\begin{frontmatter}
+
+%% Title, authors and addresses
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for theassociated footnote;
+%% use the fnref command within \author or \affiliation for footnotes;
+%% use the fntext command for theassociated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for theassociated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \affiliation{organization={},
+%%            addressline={}, 
+%%            city={},
+%%            postcode={}, 
+%%            state={},
+%%            country={}}
+%% \fntext[label3]{}
+
+\title{Projection methods for the incompressible Navier--Stokes equations using high-order hybridizable discontinuous Galerkin schemes}%
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{}
+%% \affiliation[label1]{organization={},
+%%             addressline={},
+%%             city={},
+%%             postcode={},
+%%             state={},
+%%             country={}}
+%%
+%% \affiliation[label2]{organization={},
+%%             addressline={},
+%%             city={},
+%%             postcode={},
+%%             state={},
+%%             country={}}
+
+\author[MechE]{Corbin Foucart}
+\ead{foucartc@mit.edu}
+\author[MechE]{C. Mirabito}
+\author[MechE]{P. J. Haley, Jr.}
+\author[MechE]{Pierre F.J. Lermusiaux\corref{cor_author}}
+\cortext[cor_author]{Corresponding author, }
+\ead{pierrel@mit.edu}
+
+\affiliation[MechE]{organization={Department of Mechanical Engineering, Computational Science and Engineering, Massachusetts Institute of Technology},
+            addressline={77 Massachusetts Avenue}, 
+            city={Cambridge},
+            postcode={02139}, 
+            state={MA},
+            country={USA}}
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\begin{keyword}
+Nonhydrostatic modeling \sep
+Finite element methods\sep
+Discontinuous Galerkin methods
+%% keywords here, in the form: keyword \sep keyword
+%% PACS codes here, in the form: \PACS code \sep code
+%% MSC codes here, in the form: \MSC code \sep code
+%% or \MSC[2008] code \sep code (2000 is the default)
+\end{keyword}
+
+\end{frontmatter}
+
+%\linenumbers
+
+\input{paper_body}
+
+%%Vancouver style references.
+%\bibliographystyle{model1-num-names}
+\bibliographystyle{alpha}
+\bibliography{mseas,refs}
+
+\end{document}
+
+%% main text
