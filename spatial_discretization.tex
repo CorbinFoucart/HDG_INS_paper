@@ -1,0 +1,159 @@
+\section{Spatial discretization}
+
+\subsection{Notation}
+Boilerplate
+
+\subsection{Finite element spaces}
+boilerplate
+
+\subsection{HDG Pressure-correction scheme}
+
+The choice of spatial discretization for the pressure gradient terms and the velocity divergence term is of central importance to the stability and robustness of the projection schemes in \cite{fehn_robust_2018}. Previous work in \cite{ueckermann_lermusiaux_JCP2016} conducted limited investigation of the discretization of these terms as they appeared in HDG discretizations of projection methods. This motivates the present work in determining whether the discretization of these two terms is similarly important to the robustness of HDG schemes. 
+
+The point of departure for HDG schemes is to write each semi-discretized PDE as a first-order system, which we do for the velocity predictor equation (\ref{eq:PDE_velocity_predictor})  and pressure correction equation (\ref{eq:PDE_pressure_corrector}). The projection step does not require an implicit formulation and is computed directly.
+
+\subsubsection{HDG formulation of explicit operators}
+
+\textit{Pressure gradient terms}. The pressure gradient term can 
+We integrate by parts and replace $p_h$ on the element boundary $\partial K$ with a central numerical flux $p^*_h = \mean{p_h} $. Applying the mean operator definitions on the interior and boundary interfaces separately,
+\begin{equation}
+  \text{pg}_h(\bm{v}, p_h, g_N^p) = -\left(\nabla \cdot \bm{v},\, p_h \right)_{\Th} 
+  + \left\langle \bm{v},\mean{p_h}\bm{n}\right\rangle_{\partial\Th \setminus \Gamma}
+  + \left\langle \bm{v}, g_N^p\bm{n}\right\rangle_{\Gamma_N}
+  + \left\langle \bm{v}, p_h\bm{n}\right\rangle_{\Gamma_D}
+\end{equation}%
+As in Fehn et al., we consider also an alternate reference formulation used in \cite{hesthaven_nodal_2008,ueckermann_lermusiaux_JCP2016}, which does not integrate the pressure gradient by parts,
+\begin{equation}
+  \text{pg}_{h,\text{ref}}(\bm{v}, p_h) = \left(\bm{v},\, \nabla p_h \right)_{\Th} 
+\end{equation}
+
+\textit{Advection term}. The advection term
+\begin{equation}
+  F_a(\bm{v}, \bm{u}_h)
+\end{equation}
+
+\textit{Velocity divergence term}. The HDG formulation of the velocity divergence term pertains to the discretization of terms of the form $\left(w,\, \nabla \cdot \bar{\bm{u}}_h \right)_K$ over an element $K$. Just as for the pressure gradient term, we integrate by parts and replace $\bm{u}_h$ on the element boundary $\partial K$ with a central numerical flux $\bar{\bm{u}}^*_h = \mean{\bar{\bm{u}}_h} $. Applying the mean operator definitions on the interior and boundary interfaces separately,
+\begin{equation}
+\text{vd}_h(w,\bar{\bm{u}}_h, \bm{g}_D^u)  =  (\nabla w,\, \bar{\bm{u}}_h)_{\mathcal{T}_h}
+ + \langle w,\, \mean{\bar{\bm{u}}_h} \cdot\bm{n}\rangle_{\partial\mathcal{T}_h\setminus \Gamma}
+ + \langle w,\, \bar{\bm{u}}_h \cdot\bm{n}\rangle_{\Gamma_N}
+ + \langle w,\, \bm{g}_D^u \cdot\bm{n}\rangle_{\Gamma_D}
+ ,
+\end{equation}
+where we could have taken $\bm{g}_D^u = \bar{\bm{u}}_h$ instead, since this is enforced in equation (\ref{eq:VP_BCs}). Just as for the pressure gradient term, we consider also an alternate reference formulation given in \cite{hesthaven_nodal_2008}, 
+\begin{equation}
+  \text{vd}_{h,\text{ref}}(w,\bar{\bm{u}}_h) = \left(w, \nabla \cdot \bar{\bm{u}}_h \right)_{\Th},
+\end{equation}
+which does not perform integration by parts. 
+
+note: in \cite{ueckermann_lermusiaux_JCP2016}, We integrate by parts another time (equivalent) but take $\widehat{\bar{\bm{u}}}_h^{k+1}$ as the HDG flux from the predictor solve, which may be unsound.
+
+In addition to the form of the terms themselves, HDG methods provide different choices of numerical flux which we have to investigate. Using the HDG fluxes themselves as numerical fluxes for these terms turns out to require quite complicated accounting in order to make sure the scheme stays consistent. Since the HDG flux is in some sense an intermediate quantity designed to allow for static condensation and reduction of globally-coupled degrees of freedom, it makes more sense to avoid using these fluxes elsewhere in the time discretization. Further, storing the fluxes incurs additional memory costs and requires correction \cite{ueckermann_lermusiaux_JCP2016}.
+
+\subsubsection{Velocity predictor}%
+Rewritten as a first-order system, equation (\ref{eq:PDE_velocity_predictor}) takes the form
+\begin{equation}
+  \begin{aligned}
+    \bar{\bm{L}} - \nabla \bm{u} &= 0  \\
+    \frac{ \beta_s \bar{\bm{u}} - \sum_{i=0}^{s_u-1}\left(\beta_i \bm{u}^{n-i}\right) }{\Delta t} 
+    - \nabla \cdot \left(\nu \bar{\bm{L}}\right) 
+    &= - \sum_{i=0}^{s_p-1}\left(\gamma_i\nabla p^{n-i}\right) 
+    - \nabla \cdot \left(\bm{u}^n\otimes \bm{u}^n\right) 
+    + \bm{f}(t_{n+1}),
+  \end{aligned}
+  \label{eq:velocity_predictor_first_order}
+\end{equation}
+where the first equation defines a new tensor-valued unknown $\bar{\bm{L}}$ approximating the velocity gradient $\nabla\bar{\bm{u}}$, and the second is equation (\ref{eq:PDE_velocity_predictor}) written in terms of $\bar{\bm{L}}$.
+Taking the numerical flux definition $\left(-\nu \hat{\bm{\bar{L}}}_h \right)\bm{n} \equiv \left(-\nu \bm{\bar{L}}_h\right)\bm{n} + \tau (\bm{\bar{u}}_h - \hat{\bm{u}}_h)$ and adding an equation to weakly enforce the continuity of its normal component on the space $M_h^p$ \cite{nguyen_hybridizable_2010,nguyen_implicit_2011}, we arrive at the following weak form
+
+The velocity predictor $\bar{\bm{u}}_h$
+\begin{equation}
+  \begin{aligned}
+    ( \bm{G} ,\, \bm{\bar{L}}_h)_{\Th} 
+    + ( \nabla \cdot \bm{G} ,\, \bm{\bar{u}}_h)_{\Th} 
+   - \langle \bm{G}\cdot\bm{n} ,\, \hat{\bm{u}}_h \rangle_{\partial \Th} &=0 \\
+   \left( \bm{v} ,\, \frac{\beta_s}{\Delta t} \bar{\bm{u}} \right)_{\Th}
+    - \left( \bm{v} ,\, \nabla \cdot  \left(\nu \bm{\bar{L}}_h\right) \right)_{\Th}
+    + \langle \bm{v} ,\, \tau \left(\bm{\bar{u}}_h - \hat{\bm{u}}_h\right) \rangle_{\partial \Th}
+    &= \left(\bm{v},\,  \sum_{i=0}^{s_u-1}\left(\frac{\beta_i}{\Delta t}  \bm{u}^{n-i}\right) \right)_{\Th} \\
+     - \sum_{i=0}^{s_p-1}\left(\gamma_i\,\text{pg}_h(\bm{v}, p_h^{n-i},g^p_N(t_{n-i}))\right) 
+    &+ F_a(\bm{v},\bm{u}_h)
+    + (\bm{v},\, \bm{f})_{\Th} \\
+    \left\langle \bm{\mu} ,\, (-\nu \bar{\bm{L}}_h)\bm{n} + \tau(\bar{\bm{u}}_h - \hat{\bm{u}}_h) \right\rangle_{\partial \mathcal{T}_h \setminus \Gamma_D} 
++ \left\langle \bm{\mu} ,\, \widehat{b}_h \right\rangle_{\Gamma_N} &= 0
+  \end{aligned}
+\end{equation}
+This differs from the scheme in \cite{ueckermann_lermusiaux_JCP2016}, which takes the jump of the pressure in the numerical flux.
+
+This admits a matrix-discretization over each element:
+\begin{equation}
+  \begin{bmatrix}
+   A   &  B & -C \\
+   B^T &  -D & E \\
+   -N & G &  -H
+  \end{bmatrix}
+  \begin{bmatrix} L_h \\ U_h \\ \widehat{U}_h \end{bmatrix}
+  =
+  \begin{bmatrix} 0 \\ -(F - P) \\ -L \end{bmatrix}.
+\end{equation}
+
+In the case where the velocity components are not coupled on the boundary of the mesh due to the boundary conditions, for example, when a zero Dirichlet no-slip condition is applied to the velocity along a non-trivial bathymetry, and the vertical sides of the domain are axis-aligned, the linear system arising from equation (\ref{eq:coupled_velocity_predictor_weak_form}) is decoupled, and the predictor velocity can be solved component-by-component.
+
+Let $\bar{\phi}$ represent any component of the velocity $\bar{\bm{u}}$.
+If we were to write the usual form of the HDG problem where $\bm{q} = \nu \nabla\bar{\phi}$ represents the complete gradient of the component $\bar{\phi}$, then we want to find $(\bar{\phi}, \bm{q})\in W_h\times \bm{V}_h$ such that 
+\begin{equation}
+  \begin{aligned}
+    \left(\bm{v},\, \nu^{-1}\bm{q}\right)_{\Th} 
+    +\left(\nabla \cdot \bm{v},\, \bar{\phi} \right)_{\Th}
+    - \left\langle \bm{v}\cdot\bm{n},\, \hat{\phi} \right\rangle_{\partial\Th} &=0\\
+    \left(w,\, \frac{\bar{\phi}}{a \Delta t} \right)_{\Th}
+    + \left(w,\, \nabla \cdot \left( \bm{q}\right) \right)_{\Th}
+    - \left\langle w,\, \tau\left(\bar{\phi}-\hat{\phi}\right) \right\rangle_{\partial\Th} 
+    &= \text{rh}_h(w,\bm{u}^k,p_h^k, \bm{F})_K \\
+    \left\langle \mu,\, \widehat{\bm{q}}\cdot\bm{n} \right\rangle_{\partial\Th} &= \left\langle \mu,\, g_N \right\rangle_{\Gamma_N}
+  \end{aligned}
+\end{equation}
+where the operator $\text{rh}_h(\cdot)$ contains all the componentwise right-hand side terms of the momentum equation. 
+This formulation is consistent with the full 3D velocity predictor if $\nu_{xy}=\nu_z$. 
+This also couples the domain together on the interfaces.
+The velocity predictor $\bm{\bar{u}}_h^{k+1}$ is the vector $(\bar{\phi}_u,\, \bar{\phi}_v,\, \bar{\phi}_w)$ resulting from each of the HDG solves.
+
+In the decoupled case, the formulation of the DG right-hand side operators can be obtained by considering only the relevant component $w$ of the test function $\bm{v}\in \bm{V}_h^p$ as appears in equation (\ref{eq:coupled_velocity_predictor_weak_form}). 
+For the advective term, we have 
+\begin{equation}
+  a_h(w,\bar{\phi}, \bm{u}_h^k, \bm{g}_D) 
+  = -\left(w,\, \nabla \cdot \left( \bar{\phi}\bm{u}_h^k \right)\right)_K
+   = - \left(\nabla w,\, \bar{\phi}\bm{u}^k_h\right)_K
+   + \left\langle w, \left(\bar{\phi}\bm{u}_h^k\right)^* \cdot\bm{n} \right\rangle_{\partial K},
+\end{equation}
+The numerical flux in this work $\left(\bar{\phi}\bm{u}_h^k\right)^*$ is taken to be an upwind flux.
+Since $\bm{u}_h^k$ is multiply-valued, either the average value $\mean{\bm{u}_h}$ or the HDG flux $\hat{\bm{u}}_h$ can be used.
+
+Similarly, the pressure gradient term for the component $i$ of $\bar{\bm{u}}_h^{k+1}$, $\bar{\phi}_i$, is
+\begin{equation}
+  \text{pg}_h\left(w,p_h^k\right) = 
+    - \left(\frac{\partial w}{\partial x_i},\, p^{\prime,k}_h\right)
+    + \left\langle w,\, \left(p^{\prime, k}_h\right)^*n_i \right\rangle
+\end{equation}
+where $n_i$ denotes the $i^{\text{th}}$ component of the outward unit normal $\bm{n}$, and where the numerical flux is again chosen to be the central flux, $\left(p^{\prime, k}_h\right)^* = \mean{p_h^{\prime,k}}$.
+
+\subsubsection{Pressure corrector}%
+The weak form for the pressure corrector can be expressed as 
+\begin{equation}
+\begin{aligned}
+(\bm{v},\,  \bm{q}_{\delta p}^{k+1})_{\mathcal{T}_h}
++ ( \nabla \cdot \bm{v} ,\, \delta p^{k+1})_{\mathcal{T}_h}
+- \langle \bm{v}\cdot\bm{n} ,\, \widehat{\delta p} \rangle_{\partial \mathcal{T}_h} &= 0 \\
+-(w ,\, \nabla \cdot \bm{q}_{\delta p}^{k+1})_{\mathcal{T}_h}
++ \langle w,\, \tau_p \delta p^{k+1}\rangle_{\partial \mathcal{T}_h} 
+- \langle w,\, \tau_p \widehat{\delta p} \rangle_{\partial \mathcal{T}_h} 
+&= - \frac{\beta_s}{\Delta t} \text{vd}_h(w,\bar{\bm{u}}_h, \bm{g}_D^u(t_{n+1}))  \\
+\left\langle \mu ,\, \bm{q}_{\delta p}^{k+1} \cdot\bm{n} + \tau_p(\delta p^{k+1} - \widehat{\delta p})
+\right\rangle_{\partial \mathcal{T}_h \setminus \Gamma_D} &= 0 
+\end{aligned}
+\end{equation}
+
+
+
+\subsection{Inhomogeneous boundary condition treatment}
+\subsection{Numerical flux definitions}

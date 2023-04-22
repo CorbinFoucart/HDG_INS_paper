@@ -1,0 +1,65 @@
+\section{Projection methods}%
+
+An overview of the temporal discretization and operator splitting for pressure-correction schemes is given in \cite{guermond_overview_2006}. Results from \cite{guermond_overview_2006}: (1) under certain smoothness requirements on the solution, the nonlinear advection term in the Navier--Stokes equations does not affect the convergence rates of the splitting errors, and they treat it explicitly. 
+
+\subsubsection{Velocity predictor step}
+An intermediate predictor velocity $\bar{\bm{u}}$ is calculated by solving the momentum equation with an explicit extrapolation of the pressure gradient term and explicit treatment of the advection term
+\begin{equation}
+\frac{ \beta_s \bar{\bm{u}} - \sum_{i=0}^{s_u-1}\left(\beta_i \bm{u}^{n-i}\right) }{\Delta t} 
+- \nabla \cdot \left(\nu \nabla \bar{\bm{u}}\right) 
+= - \sum_{i=0}^{s_p-1}\left(\gamma_i\nabla p^{n-i}\right) 
+- \nabla \cdot \left(\bm{u}^n\otimes \bm{u}^n\right) 
++ \bm{f}(t_{n+1}),
+\label{eq:PDE_velocity_predictor}
+\end{equation}
+where the boundary conditions for the predictor velocity are 
+\begin{align}
+  \begin{aligned}
+  \bar{\bm{u}} &= \bm{g}_D^u(t_{n+1}) & \text{ on } \Gamma_D, \\
+  \left(\nu \nabla \bar{\bm{u}}\right) \cdot \bm{n} &= \bm{g}_N^u(t_{n+1}) & \text{ on } \Gamma_N.
+  \end{aligned}
+  \label{eq:VP_BCs}
+\end{align}
+
+\subsubsection{Pressure corrector step}
+The second step involves computing a correction $\delta p^{k+1}$ to the pressure by solving 
+\begin{equation}
+  -\nabla^2 \delta p^{k+1} = - \frac{\beta_s}{\Delta t} \nabla \cdot \bar{\bm{u}},
+  \label{eq:PC_presure_poisson}
+\end{equation}
+subject to the boundary conditions
+\begin{eqnarray}
+    \nabla \delta p^{n+1} \cdot \bm{n} = 0 & \text{ on } \Gamma_D, \\
+    \delta p^{n+1} = g_p(t_{n+1}) 
+    - \sum_{i=0}^{s_p-1}\left(\beta_i g_p(t_{n-i})\right) & \text{ on }  \Gamma_N.
+\label{eq:PDE_pressure_corrector}
+\end{eqnarray}
+
+The pressure Poisson equation (\ref{eq:PC_presure_poisson}) is obtained by
+writing the intermediate velocity $\bar{\bm{u}}$ in terms of a Helmholtz
+decomposition consisting of a solenoidal component $\bm{u}$ (since $\nabla \cdot
+\bm{u}= 0$) and irrotational component $\nabla \delta p^{n+1}$,
+\begin{eqnarray}
+  \frac{\beta_s}{\Delta t} \bm{u}^{n+1} + \nabla \delta p^{n+1} =
+  \frac{\beta_s}{\Delta t} \bar{\bm{u}}, \label{eq:PC:helmholtz} \\
+  \delta p^{n+1} = p^{n+1} 
+    - \sum_{i=0}^{s_p-1}\left(\beta_i p^{n-i}\right) 
+    + \chi \nu \nabla \cdot \bar{\bm{u}},
+\end{eqnarray}
+then taking the divergence of equation (\ref{eq:PC:helmholtz}), making use of the divergence-free constraint $\nabla \cdot \bm{u}^{n+1} = 0 $. Taking $\chi=0$ corresponds to the standard formulation and $\chi=1$ the rotational formulation of the method, respectively \cite{guermond_overview_2006}. We consider the rotational formulation hereafter.  
+
+\subsubsection{Projection step}
+In the third step, the velocity $\bm{u}^{n+1}$ and pressure $p^{n+1}$ at time $t_{n+1}$ are obtained by performing updates amounting to the projection of $\bar{\bm{u}}$ onto the space of divergence-free vector fields
+
+\begin{align}
+  \bm{u}^{n+1} &= \bar{\bm{u}} - \frac{\Delta t}{\beta_s} \nabla \delta p^{n+1}, \\
+  p^{n+1} &= \sum_{i=0}^{s_p-1} \left(\beta_i p^{n-i}\right) 
+  + \delta p^{n+1} 
+  - \nu \nabla \cdot \bar{\bm{u}},
+\end{align}
+
+Theoretical rates of convergence for the pressure-corrector schemes are given in \cite{guermond_overview_2006}.
+The authors suggest that schemes are only conditionally stable for $s_p \geq 2$.
+To ensure unconditional stability, we therefore select $s_u = 2$ and $s_p = 1$.
+With these choices, the pressure-corrector scheme using the rotational formulation can be expected to be $\Delta t^2$ accurate in the $L^2$-norm of the velocity and $\Delta t^{3/2}$ accurate in the $L^2$-norm of the pressure.
+
