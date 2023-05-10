@@ -113,7 +113,7 @@ If we were to write the usual form of the HDG problem where $\bm{q} = \nu \nabla
     \left\langle \mu,\, \widehat{\bm{q}}\cdot\bm{n} \right\rangle_{\partial\Th} &= \left\langle \mu,\, g_N \right\rangle_{\Gamma_N}
   \end{aligned}
 \end{equation}
-where the operator $\text{rh}_h(\cdot)$ contains all the componentwise right-hand side terms of the momentum equation. 
+where the operator $\text{rh}_h(\cdot)$ contains all the component-wise right-hand side terms of the momentum equation. 
 This formulation is consistent with the full 3D velocity predictor if $\nu_{xy}=\nu_z$. 
 This also couples the domain together on the interfaces.
 The velocity predictor $\bm{\bar{u}}_h^{k+1}$ is the vector $(\bar{\phi}_u,\, \bar{\phi}_v,\, \bar{\phi}_w)$ resulting from each of the HDG solves.
@@ -126,6 +126,9 @@ For the advective term, we have
    = - \left(\nabla w,\, \bar{\phi}\bm{u}^k_h\right)_K
    + \left\langle w, \left(\bar{\phi}\bm{u}_h^k\right)^* \cdot\bm{n} \right\rangle_{\partial K},
 \end{equation}
+where the operator $a_h(\cdot)$ can be be treated explicitly by taking $\bar{\phi} = u^k_{h,j}$ where the integer $j$ denotes the spatial dimension corresponding to the component of the predictor velocity sought, or it can be treated semi-implicitly (\cf  \,\cite{nguyen_implicit_2009}) as written; in the latter case, the weak form is no longer symmetric.
+In this paper, we consider a completely explicit treatment.
+\todo{need to consider boundary treatment for the advective flux--compare table in Fehn with naive approach!}
 The numerical flux in this work $\left(\bar{\phi}\bm{u}_h^k\right)^*$ is taken to be an upwind flux.
 Since $\bm{u}_h^k$ is multiply-valued, either the average value $\mean{\bm{u}_h}$ or the HDG flux $\hat{\bm{u}}_h$ can be used.
 
@@ -152,7 +155,6 @@ The weak form for the pressure corrector can be expressed as
 \right\rangle_{\partial \mathcal{T}_h \setminus \Gamma_D} &= 0 
 \end{aligned}
 \end{equation}
-
 
 
 \subsection{Inhomogeneous boundary condition treatment}
