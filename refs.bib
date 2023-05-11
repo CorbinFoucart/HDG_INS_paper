@@ -18,13 +18,31 @@
 }
 
 #F
+
+
+@article{fehn_stability_2017,
+	title = {On the stability of projection methods for the incompressible {Navier}–{Stokes} equations based on high-order discontinuous {Galerkin} discretizations},
+	volume = {351},
+	issn = {0021-9991},
+	url = {http://www.sciencedirect.com/science/article/pii/S0021999117306915},
+	doi = {10.1016/j.jcp.2017.09.031},
+	language = {en},
+	urldate = {2020-12-06},
+	journal = {Journal of Computational Physics},
+	author = {Fehn, Niklas and Wall, Wolfgang A. and Kronbichler, Martin},
+	month = dec,
+	year = {2017},
+	keywords = {Discontinuous Galerkin method, Dual splitting, Incompressible Navier–Stokes, Inf–sup stability, Pressure-correction, Projection methods},
+	pages = {392--421},
+}
+
+
 @article{fehn_robust_2018,
 	title = {Robust and efficient discontinuous {Galerkin} methods for under-resolved turbulent incompressible flows},
 	volume = {372},
 	issn = {0021-9991},
 	url = {http://www.sciencedirect.com/science/article/pii/S0021999118304157},
 	doi = {10.1016/j.jcp.2018.06.037},
-	abstract = {We present a robust and accurate discretization approach for incompressible turbulent flows based on high-order discontinuous Galerkin methods. The DG discretization of the incompressible Navier–Stokes equations uses the local Lax–Friedrichs flux for the convective term, the symmetric interior penalty method for the viscous term, and central fluxes for the velocity–pressure coupling terms. Stability of the discretization approach for under-resolved, turbulent flow problems is realized by a purely numerical stabilization approach. Consistent penalty terms that enforce the incompressibility constraint as well as inter-element continuity of the velocity field in a weak sense render the numerical method a robust discretization scheme in the under-resolved regime. The penalty parameters are derived by means of dimensional analysis using penalty factors of order 1. Applying these penalty terms in a postprocessing step leads to an efficient solution algorithm for turbulent flows. The proposed approach is applicable independently of the solution strategy used to solve the incompressible Navier–Stokes equations, i.e., it can be used for both projection-type solution methods as well as monolithic solution approaches. Since our approach is based on consistent penalty terms, it is by definition generic and provides optimal rates of convergence when applied to laminar flow problems. Robustness and accuracy are verified for the Orr–Sommerfeld stability problem, the Taylor–Green vortex problem, and turbulent channel flow. Moreover, the accuracy of high-order discretizations as compared to low-order discretizations is investigated for these flow problems. A comparison to state-of-the-art computational approaches for large-eddy simulation indicates that the proposed methods are highly attractive components for turbulent flow solvers.},
 	language = {en},
 	urldate = {2020-12-06},
 	journal = {Journal of Computational Physics},
@@ -44,7 +62,6 @@
 	issn = {0036-1429},
 	url = {https://epubs.siam.org/doi/abs/10.1137/040604418},
 	doi = {10.1137/040604418},
-	abstract = {The incompressible Stokes equations with prescribed normal stress (open) boundary conditions on part of the boundary are considered. It is shown that the standard pressure-correction method is not suitable for approximating the Stokes equations with open boundary conditions, whereas the rotational pressure-correction method yields reasonably good error estimates. These results appear to be the first ever published for splitting schemes with open boundary conditions. Numerical results in agreement with the error estimates are presented.},
 	number = {1},
 	urldate = {2020-12-06},
 	journal = {SIAM Journal on Numerical Analysis},
@@ -61,7 +78,6 @@
 	issn = {0045-7825},
 	url = {http://www.sciencedirect.com/science/article/pii/S0045782505004640},
 	doi = {10.1016/j.cma.2005.10.010},
-	abstract = {A series of numerical issues related to the analysis and implementation of fractional step methods for incompressible flows are addressed in this paper. These methods are often referred to in the literature as projection methods, and can be classified into three classes, namely the pressure-correction methods, the velocity-correction methods, and the consistent splitting methods. For each class of schemes, theoretical and numerical convergence results available in the literature are reviewed and open questions are discussed. The essential results are summarized in a table which could serve as a useful reference to numerical analysts and practitioners.},
 	language = {en},
 	number = {44},
 	urldate = {2020-12-06},
@@ -172,7 +188,6 @@
 	issn = {1097-0363},
 	url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/fld.1650181006},
 	doi = {https://doi.org/10.1002/fld.1650181006},
-	abstract = {The incompressible Navier-Stokes equations—and their thermal convection and stratified flow analogue, the Boussinesq equations—possess solutions in bounded domains only when appropriate/legitimate boundary conditions (BCs) are appended at all points on the domain boundary. When the boundary—or, more commonly, a portion of it—is not endowed with a Dirichlet BC, we are faced with selecting what are called open boundary conditions (OBCs), because the fluid may presumably enter or leave the domain through such boundaries. The two minisymposia on OBCs that are summarized in this paper had the objective of finding the best OBCs for a small subset of two-dimensional test problems. This objective, which of course is not really well-defined, was not met (we believe), but the contributions obtained probably raised many more questions/issues than were resolved—notable among them being the advent of a new class of OBCs that we call FBCs (fuzzy boundary conditions).},
 	language = {en},
 	number = {10},
 	urldate = {2020-12-06},

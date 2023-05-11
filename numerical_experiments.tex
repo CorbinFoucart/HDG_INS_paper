@@ -8,6 +8,39 @@ Spatial convergence test, temporal convergence test
 
 \subsection{Unsteady Stokes Flow}
 
+The review paper \cite{guermond_overview_2006} solves the unsteady Stokes problem
+
+\begin{equation}
+  \begin{aligned}
+    \bm{u}(\bm{x}, t) &= \pi \sin t 
+    \begin{pmatrix}
+      \sin( 2\pi y) \sin^2( \pi x) \\
+      -\sin(2 \pi x) \sin^2(\pi y)
+    \end{pmatrix} \\
+    p(\bm{x}, t) &= \sin(t)\cos(\pi x) \sin(\pi y)\\
+  \end{aligned}
+  \label{eq:MS_stokes_guermond}
+\end{equation}
+where the source term $f= u_t -\nu \nabla \cdot( \nabla \bm{u} ) + \nabla p $.
+
+In \cite{fehn_stability_2017}, we have
+\begin{equation}
+  \begin{aligned}
+  \bm{u}(\bm{x}, t) &= 
+  \begin{pmatrix}
+    \sin(x) (a\sin(a y) - \cos(a)\sinh(y)) \\
+    \cos(x) (\cos(a y) + \cos(a)\cosh(y))
+  \end{pmatrix}
+  \exp(-\lambda t),\\
+    p(\bm{x}, t) &= \lambda \cos(a) \cos(x) \sinh(y) \exp(-\lambda t)
+  \end{aligned}
+  \label{eq:MS_unsteady_stokes_fehn}
+\end{equation}
+where $\lambda = \nu(1 + a^2)$ $\nu = 1$ and $a = 2.883356$ on a domain of  $\Omega = [-1, 1]^2$; they take $[0, T] = [0, 0.1]$ and Dirichlet boundary conditions everywhere, $\Gamma = \Gamma_D$.
+
+
+
+
 \subsection{Taylor-Green vortex flow}
 Is this the same test case as in Hesthaven?
 
