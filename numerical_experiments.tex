@@ -1,3 +1,27 @@
+
+\section{Computational considerations}
+
+HDG methods offer several well-known advantages over standard DG-FEM methods. 
+In addition to favorable convergence properties, hybridization of the system by introducing the space \todo{Mph} can lead to a substantial reduction in globally-coupled degrees of freedom as compared to classical DG methods.
+However, the complexities associated with the static condensation procedure introduce a set of non-typical computational performance considerations as compared to other high-order methods.
+In this section, we provide a brief discussion of practical computational considerations specific to HDG schemes in the context of parallelization and matrix-free solvers. These topics are often overlooked or unaddressed in the literature (to DG/HDG etc ref).
+
+A commonly cited performance advantage of HDG is the embarrassingly parallel nature of the assembly as well as the local reconstruction of the numerical solution QH UH from the trace quantity UHAT.
+Means that people brush this step off computationally, as a parallel implementation should make it trivial.
+However there's more to the story than that.
+
+
+
+though it may seem counterintuitive, multi-threaded programs can sometimes run slower than their single-threaded or serial counterparts due to several reasons:
+
+Overhead: Threads require resources for creation, termination, and synchronization. The overhead of managing multiple threads can slow down the program, especially if the computation performed by each thread is not significant compared to this overhead.
+Contention: When multiple threads try to access a shared resource simultaneously, contention can occur. This could lead to a situation called a lock, where one thread has to wait for another to release a resource. In extreme cases, this can lead to a slowdown known as lock contention, where the threads spend more time waiting to access the resource than doing useful work.
+False sharing: Even if different threads are working on different data, if that data is close enough in memory (i.e., in the same cache line), then the hardware can treat it as if it were shared. When one thread updates its data, the hardware will think the entire cache line has been modified and will have to update it across all the cores, leading to a significant slowdown. This is known as false sharing.
+Load imbalance: If the work is not evenly distributed across threads, some threads may finish their work early and sit idle, while others are still working. This is known as load imbalance. It can result in the execution time of the program being dominated by the slowest thread.
+Non-parallelizable tasks: Some tasks simply can't be parallelized effectively due to their nature, they are inherently serial (or "sequential"). This principle is encapsulated by Amdahl's Law, which states that the maximum improvement to a system's performance is limited by the portion of the system that can't be parallelized.
+Memory limits: Every thread created uses some memory for its stack. If the number of threads is too high, it can cause significant memory usage, potentially leading to swapping if the system runs out of physical memory, which can drastically decrease performance.
+It's worth noting that developing an efficient multi-threaded program requires careful design to minimize these issues. This can involve techniques such as fine-tuning the number of threads, avoiding contention and false sharing, balancing the load properly, and choosing appropriate data structures and synchronization primitives. But even with all these considerations, there's no guarantee that a multi-threaded solution will always outperform a well-optimized single-threaded one. It highly depends on the nature of the problem and the specific hardware the software is running on.
+
 \section{Numerical experiments}
 \label{sec:numerical_experiments}
 
