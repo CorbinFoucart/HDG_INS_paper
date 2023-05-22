@@ -8,6 +8,7 @@ The finite element forward models were implemented in \texttt{C++} and make use 
 \todo{
 All surface and volume integral operators are discretized with Gaussian quadrature using $p_{\text{order}}+1$ one-dimensional (1D) quadrature points in each spatial direction, where $p_{\text{order}}$ is the polynomial order of the finite element space (space)}. 
 %$W_h^\porder$.
+The experiments in this work are run on a compute blade containing two 32-core AMD EPYC 7543 processors running at 2.80 GHz.
 
 Convergence results are reported using the relative $L^2$-errors 
 \begin{equation}
@@ -16,6 +17,8 @@ Convergence results are reported using the relative $L^2$-errors
 \end{equation}
 where each of the $\LII$-norms over the computational domain $\dom_h$ is calculated using Gaussian quadrature over the element volumes using $p_{\bm{u}} + 3$ for errors in the velocity and $p_{p} + 3$ for errors in the pressure variables.
 Unless explicitly specified, the abbreviations $\erroru$ and $\errorp$ refer to the velocity and pressure errors at the final time $T$.
+
+
 
 \subsection{Computational considerations}
 \label{sec:computational}
@@ -51,12 +54,18 @@ It's worth noting that developing an efficient multi-threaded program requires c
 In this case the synchronization work necessary to ensure no race condition while copying elemental contributions into the global linear system is highly sensitive to problem dimension and polynomial order.
 The necessary work on the cell 
 
+In the following, we discretize the problem at different polynomial orders such that the global number of primal degrees of freedom are held constant.
+We evaluate the assembly times using both serial and parallelized assembly.
 \begin{figure}[htpb]
   \centering
   \includegraphics[width=0.8\linewidth]{img/assembly_benchmarking_2D.pdf}
   \caption{Wall clock times for 2D HDG assembly at constant problem size, serial vs. parallel}
   \label{fig:assembly_benchmarking_2D}
 \end{figure}
+
+\begin{itemize}
+  \item need to give the computer enough work (i.e., large enough problem size)
+\end{itemize}
 
 \begin{figure}[htpb]
   \centering
@@ -177,3 +186,59 @@ Is this the same test case as in Hesthaven?
 
 \subsection{Lock Exchange?}
 \subsection{Lab RTI flow?}
+
+\section{Appendix}
+
+\subsection{Convergence history for the pure Neumann problem}%
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{llcccc} \hline
+$p$ & $N_K$ & $u_h$ & order & $\bm{q}_h$ & order \\
+\hline
+%\multicolumn{2}{c}{$u_h$} & 
+%\multicolumn{2}{c}{$\bm{q}_h$}\\ \hline
+1 & 1 & 1.323e+01 & - & 1.180e+01 & -\\ 
+  & 4 & 2.077e+00 & 2.67 & 3.348e+00 & 1.82\\
+  & 16 & 9.620e-01 & 1.11 & 1.785e+00 & 0.91\\
+  & 64 & 2.134e-01 & 2.17 & 3.911e-01 & 2.19\\
+  & 256 & 5.828e-02 & 1.87 & 1.044e-01 & 1.91\\
+  & 1024 & 1.514e-02 & 1.94 & 2.685e-02 & 1.96\\
+  & 4096 & 3.851e-03 & 1.97 & 6.801e-03 & 1.98\\
+\hline
+2 & 1 & 4.377e+00 & 1.69 & 7.488e+00 & 1.68\\
+  & 4 & 1.268e+00 & 1.79 & 2.488e+00 & 1.59\\
+  & 16 & 4.212e-02 & 4.91 & 1.270e-01 & 4.29\\
+  & 64 & 2.740e-02 & 0.62 & 5.035e-02 & 1.33\\
+  & 256 & 3.642e-03 & 2.91 & 6.592e-03 & 2.93\\
+  & 1024 & 4.668e-04 & 2.96 & 8.395e-04 & 2.97\\
+  & 4096 & 5.901e-05 & 2.98 & 1.058e-04 & 2.99\\
+\hline
+3 & 1 & 1.370e+00 & 2.42 & 2.964e+00 & 2.46\\
+  & 4 & 1.056e-01 & 3.70 & 3.524e-01 & 3.07\\
+  & 16 & 5.215e-02 & 1.02 & 9.719e-02 & 1.86\\
+  & 64 & 2.667e-03 & 4.29 & 4.912e-03 & 4.31\\
+  & 256 & 1.748e-04 & 3.93 & 3.185e-04 & 3.95\\
+  & 1024 & 1.114e-05 & 3.97 & 2.019e-05 & 3.98\\
+  & 4096 & 7.019e-07 & 3.99 & 1.269e-06 & 3.99\\
+\hline
+4 & 1 & 1.584e+00 & 3.52 & 3.446e+00 & 3.56\\
+  & 4 & 1.858e-01 & 3.09 & 3.587e-01 & 3.26\\
+  & 16 & 1.330e-03 & 7.13 & 3.375e-03 & 6.73\\
+  & 64 & 2.086e-04 & 2.67 & 3.848e-04 & 3.13\\
+  & 256 & 6.778e-06 & 4.94 & 1.240e-05 & 4.96\\
+  & 1024 & 2.151e-07 & 4.98 & 3.919e-07 & 4.98\\
+  & 4096 & 6.767e-09 & 4.99 & 1.230e-08 & 4.99\\
+\hline
+5 & 1 & 2.630e-01 & 4.20 & 8.666e-01 & 4.34\\
+  & 4 & 9.138e-03 & 4.85 & 2.661e-02 & 5.03\\
+  & 16 & 1.106e-03 & 3.05 & 2.060e-03 & 3.69\\
+  & 64 & 1.362e-05 & 6.34 & 2.516e-05 & 6.36\\
+  & 256 & 2.200e-07 & 5.95 & 4.034e-07 & 5.96\\
+  & 1024 & 3.482e-09 & 5.98 & 6.364e-09 & 5.99\\
+  & 4096 & 5.470e-11 & 5.99 & 9.984e-11 & 5.99\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
