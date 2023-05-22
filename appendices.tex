@@ -1,0 +1,68 @@
+\section{Pure Neumann problem}
+
+\subsection{Convergence history for the pure Neumann problem}%
+\label{sec:convergence_history_pure_neumann}
+We present the error and convergence in $\LII$-norm in Table \ref{tab:pure_neumann_convergence} for the numerical solution of the pure Neumann problem using the method of subspace projection.
+
+\begin{table}[H]
+\footnotesize
+\begin{center}
+\begingroup\setlength{\fboxsep}{0pt}
+\colorbox{llg}{%
+\begin{tabular}{llllll}
+\toprule
+  Degree       & Mesh &$||u_h-u||_{L^2(\Omega)}$ &        & $||q_h-q||_{L^2(\Omega)} $&           \\
+  $p$          &     $N_K$      & Error                    &  Order & Error                     &  Order    \\
+%$p$ & $N_K$ 
+%& $\left\lVert u - u_h\right\rVert_{\LII(\dom)} $ & 
+%& $\left\lVert \bm{q} - \bm{q}_h\right\rVert_{\LII(\dom)} $ & \\
+\toprule
+  \hspace{1cm} & \hspace{2cm} &                          &\hspace{2cm} &                      &           \\
+%\multicolumn{2}{c}{$u_h$} & 
+%\multicolumn{2}{c}{$\bm{q}_h$}\\ \hline
+1 & 1 & 1.323e+01 & - & 1.180e+01 & -\\ 
+  & 4 & 2.077e+00 & 2.67 & 3.348e+00 & 1.82\\
+  & 16 & 9.620e-01 & 1.11 & 1.785e+00 & 0.91\\
+  & 64 & 2.134e-01 & 2.17 & 3.911e-01 & 2.19\\
+  & 256 & 5.828e-02 & 1.87 & 1.044e-01 & 1.91\\
+  & 1024 & 1.514e-02 & 1.94 & 2.685e-02 & 1.96\\
+  & 4096 & 3.851e-03 & 1.97 & 6.801e-03 & 1.98\\
+&&&&& \\
+2 & 1 & 4.377e+00 & 1.69 & 7.488e+00 & 1.68\\
+  & 4 & 1.268e+00 & 1.79 & 2.488e+00 & 1.59\\
+  & 16 & 4.212e-02 & 4.91 & 1.270e-01 & 4.29\\
+  & 64 & 2.740e-02 & 0.62 & 5.035e-02 & 1.33\\
+  & 256 & 3.642e-03 & 2.91 & 6.592e-03 & 2.93\\
+  & 1024 & 4.668e-04 & 2.96 & 8.395e-04 & 2.97\\
+  & 4096 & 5.901e-05 & 2.98 & 1.058e-04 & 2.99\\
+&&&&& \\
+3 & 1 & 1.370e+00 & 2.42 & 2.964e+00 & 2.46\\
+  & 4 & 1.056e-01 & 3.70 & 3.524e-01 & 3.07\\
+  & 16 & 5.215e-02 & 1.02 & 9.719e-02 & 1.86\\
+  & 64 & 2.667e-03 & 4.29 & 4.912e-03 & 4.31\\
+  & 256 & 1.748e-04 & 3.93 & 3.185e-04 & 3.95\\
+  & 1024 & 1.114e-05 & 3.97 & 2.019e-05 & 3.98\\
+  & 4096 & 7.019e-07 & 3.99 & 1.269e-06 & 3.99\\
+&&&&& \\
+4 & 1 & 1.584e+00 & 3.52 & 3.446e+00 & 3.56\\
+  & 4 & 1.858e-01 & 3.09 & 3.587e-01 & 3.26\\
+  & 16 & 1.330e-03 & 7.13 & 3.375e-03 & 6.73\\
+  & 64 & 2.086e-04 & 2.67 & 3.848e-04 & 3.13\\
+  & 256 & 6.778e-06 & 4.94 & 1.240e-05 & 4.96\\
+  & 1024 & 2.151e-07 & 4.98 & 3.919e-07 & 4.98\\
+  & 4096 & 6.767e-09 & 4.99 & 1.230e-08 & 4.99\\
+&&&&& \\
+5 & 1 & 2.630e-01 & 4.20 & 8.666e-01 & 4.34\\
+  & 4 & 9.138e-03 & 4.85 & 2.661e-02 & 5.03\\
+  & 16 & 1.106e-03 & 3.05 & 2.060e-03 & 3.69\\
+  & 64 & 1.362e-05 & 6.34 & 2.516e-05 & 6.36\\
+  & 256 & 2.200e-07 & 5.95 & 4.034e-07 & 5.96\\
+  & 1024 & 3.482e-09 & 5.98 & 6.364e-09 & 5.99\\
+  & 4096 & 5.470e-11 & 5.99 & 9.984e-11 & 5.99\\
+  \bottomrule
+\end{tabular}
+}\endgroup % end color
+\end{center}
+\caption{Convergence history for the singular pure Neumann problem using subspace projection.}
+\label{tab:pure_neumann_convergence}
+\end{table}
