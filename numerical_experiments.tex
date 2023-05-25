@@ -18,6 +18,9 @@ Convergence results are reported using the relative $L^2$-errors
 where each of the $\LII$-norms over the computational domain $\dom_h$ is calculated using Gaussian quadrature over the element volumes using $p_{\bm{u}} + 3$ for errors in the velocity and $p_{p} + 3$ for errors in the pressure variables.
 Unless explicitly specified, the abbreviations $\erroru$ and $\errorp$ refer to the velocity and pressure errors at the final time $T$.
 
+Similarly, unless otherwise specified, all iterative solver tolerances are specified to a relative error of $10^{-12}$ and an absolute error of 
+
+The iterative solvers used in the subsequent test cases use a relative solver tolerance of $10^{-8}$ and an absolute solver tolerance of $10^{-12}$ as tolerance criteria for all system of equations to be solved, unless otherwise specified.
 
 
 \subsection{Computational considerations}
@@ -127,7 +130,8 @@ Boundary conditions and forcing function are deduced from the exact solution
 \begin{equation}
     \delta_p^* = \frac{1}{3} \sin\left(-\frac{\pi}{2} x \right) \cos\left(2\pi y\right).
 \end{equation}
-We consider the domain $\Omega = [-1, 1]^2$, and by symmetry, we have that the exact solution $\delta_p^*$ is analytically zero-mean in the sense of equation (\ref{eq:mean_value_zero_condition}).
+We consider the domain $\Omega = [-1, 1]^2$. By symmetry, we have that the exact solution $\delta_p^*$ is analytically zero-mean in the sense of equation (\ref{eq:mean_value_zero_condition}).
+Additionally, the value of the boundary condition $g_N = \nabla \delta_p^* \cdot\bm{n}$ vanishes algebraically over the boundary $\partial \Omega$, imitating the boundary conditions imposed in the pressure corrector step.
 
 \begin{figure}[htpb]
   \centering
@@ -138,13 +142,27 @@ We consider the domain $\Omega = [-1, 1]^2$, and by symmetry, we have that the e
 \begin{figure}[ht]
     \centering
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[height=6cm]{img/PNP_conv_2D_mesh_size.pdf}
+        \includegraphics[height=7cm]{img/PNP_conv_2D.pdf}
     \end{subfigure}
     \begin{subfigure}{0.45\textwidth}
-        \includegraphics[height=6cm]{img/PNP_conv_2D_dofs.pdf}
+        \includegraphics[height=7cm]{img/PNP_conv_2D_dofs.pdf}
     \end{subfigure}
-    \caption{Errors in the primal unknown $\left\lVert u - u_h \right\rVert_{\LII(\dom)} $ for the singular Neumann problem (2D) treated with subspace projection. Convergence is shown with respect to mesh size as well as number of globally-coupled unknowns. Optimal convergence is achieved for all polynomial orders.}
-    \label{}
+    \caption{Errors in the primal unknown $\left\lVert u - u_h \right\rVert_{\LII(\dom)} $ for the singular Neumann problem (2D) treated with subspace projection. Convergence is shown with respect to mesh size as well as number of globally-coupled unknowns. Optimal convergence is achieved for all polynomial orders.
+    Convergence history data is tabulated in \ref{sec:convergence_history_pure_neumann}}
+    \label{fig:INS:convergence_singular_system_projection}
+\end{figure}
+
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[height=7cm]{img/PNP_solver_iterations.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[height=7cm]{img/PNP_treatment_wall_times.pdf}
+    \end{subfigure}
+    \caption{Performance comparisons of the different singularity treatments}
+    \label{fig:PNP_treatment_performance}
 \end{figure}
 
 \section{Numerical experiments}
