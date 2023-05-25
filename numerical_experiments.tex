@@ -15,7 +15,7 @@ Convergence results are reported using the relative $L^2$-errors
   \erroru(t) = \frac{ \left\lVert \vel(\bm{x}, t) - \velh(\bm{x}, t)\right\rVert_{\LII(\dom_h)} }{ \left\lVert \vel(\bm{x}, t) \right\rVert_{\LII(\dom_h)} }, \qquad 
   \errorp(t) =\frac{ \left\lVert \p(\bm{x}, t) - \ph(\bm{x}, t)\right\rVert_{\LII(\dom_h)} }{ \left\lVert \p(\bm{x}, t) \right\rVert_{\LII(\dom_h)} },
 \end{equation}
-where each of the $\LII$-norms over the computational domain $\dom_h$ is calculated using Gaussian quadrature over the element volumes using $p_{\bm{u}} + 3$ for errors in the velocity and $p_{p} + 3$ for errors in the pressure variables.
+for vector- and scalar-valued quantities, respectively. Each of the $\LII$-norms over the computational domain $\dom_h$ is calculated using Gaussian quadrature over the element volumes using $p_{\bm{u}} + 3$ for errors in the velocity and $p_{p} + 3$ for errors in the pressure variables.
 Unless explicitly specified, the abbreviations $\erroru$ and $\errorp$ refer to the velocity and pressure errors at the final time $T$.
 
 Similarly, unless otherwise specified, all iterative solver tolerances are specified to a relative error of $10^{-12}$ and an absolute error of 
@@ -44,7 +44,7 @@ However there's more to the story than that.
   \item multi-threaded parallel applications highly dependent on polynomial order
 \end{itemize}
 
-though it may seem counterintuitive, multi-threaded programs can sometimes run slower than their single-threaded or serial counterparts due to several reasons:
+though it may seem counter-intuitive, multi-threaded programs can sometimes run slower than their single-threaded or serial counterparts due to several reasons:
 
 Overhead: Threads require resources for creation, termination, and synchronization. The overhead of managing multiple threads can slow down the program, especially if the computation performed by each thread is not significant compared to this overhead.
 Contention: When multiple threads try to access a shared resource simultaneously, contention can occur. This could lead to a situation called a lock, where one thread has to wait for another to release a resource. In extreme cases, this can lead to a slowdown known as lock contention, where the threads spend more time waiting to access the resource than doing useful work.
@@ -93,25 +93,30 @@ In the case of pure Dirichlet boundaries on the velocity predictor, the pressure
 To see this, note that if the scalar field $\delta p_h$ is a solution of (\ref{eq:PC_presure_poisson}) with $\Gamma_N = \partial \Omega$, then $\delta p_h + c$ for any $c \in \reals$ is also a solution. 
 Discretely, the null space of the linear system arising due to the discretization of (\ref{eq:PC_presure_poisson}) is spanned by the set of constant vectors, implying a singular linear system.
 
+Although crucial to the performance of pressure correction schemes, the issue of finding a solution to the rank-one deficient singular system in such cases receives little attention in the literature, outside of specialized literature for iterative solvers \cite{axelsson_iterative_1996,iankov_finite_2013}.
 
-Although crucial to the performance of pressure correction schemes, the issue of finding a solution to the singular system in such cases receives little attention in the literature. 
-iterative solvers \cite{axelsson_iterative_1996,iankov_finite_2013}, 
-An approach favored by many practitioners is to manually specify the value of the candidate solution at a single point by removing an equation from the discrete system and applying a Dirichlet constraint fixing the value of the solution at that point to an arbitrary constant, eliminating the null space and allowing solution of the linear system using a conventional direct solver.
-However, in a finite-element context, the function $\delta_p$ is often represented in the Sobolev space $H^1(\Omega)$ or $L^2(\Omega)$, spaces in which point evaluations do not make sense. 
-In these cases, imposing such a constraint can render the variational problem ill-posed.
+In \cite{bochev_finite_2005}, the authors rigorously describe strategies for addressing the singular system in a continuous finite element context. 
+Here, we extend that discussion to the DG-FEM setting and illustrate computational trade-offs associated with different candidate approaches.
 
 \todo{
 This is complicated by the fact that some numerical linear algebra software varies widely in terms of implementation; while some libraries will not solve a singular system (numpy), other direct procedures will do so when they can identify a zero-pivot. 
 Similar for iterative solvers.}
 
+\textbf{section TD}
+\begin{itemize}[itemsep=1pt]
+  \item lit review
+  \item three approaches
+  \item manufactured solution
+\end{itemize}
 
-In \cite{bochev_finite_2005}, the authors rigorously describe strategies for addressing the singular system in a continuous finite element context. 
-Here, we extend that discussion to the DG-FEM setting and illustrate computational trade-offs associated with some candidate approaches.
+\subsubsection{Proposed solutions}%
 
-As a first approach, we apply a subspace projection using a Krylov-solver \cite{vorst_iterative_2003}, making use of the fact that iterative solvers solve singular systems provided that the right-hand side is in the orthogonal complement of the null-space.
+\textbf{Subspace projection.} As a first approach, we apply a subspace projection using a Krylov-solver \cite{vorst_iterative_2003}, making use of the fact that iterative solvers solve singular systems provided that the right-hand side is in the orthogonal complement of the null-space.
 \todo{
 This modification is ok because we're only removing the null space contribution to the linear system
 }
+
+\textbf{Penalty method.}
 As a second approach, we apply a penalty-based method which can be interpreted as a regularization.
 This method, while simple and independent of linear solver type, involves the specification of a hyperparameter $\gamma$.
 As a third approach, we impose a mean-value constraint 
@@ -121,24 +126,42 @@ As a third approach, we impose a mean-value constraint
 \end{equation}
 into the linear system directly, avoiding the saddle point system that arises as a result of applying the constraint as a Lagrange multiplier \cite{bochev_finite_2005}.
 
-\todo{
-As a test case, we use a manufactured solution
-How to do the zero-mean removal?
-}
+\textbf{Point constraint.} An approach favored by many practitioners is to manually specify the value of the candidate solution at a single point by removing an equation from the discrete system and applying a Dirichlet constraint fixing the value of the solution at that point to an arbitrary constant, eliminating the null space and allowing solution of the linear system using a conventional direct solver.
+However, in a finite-element context, the function $\delta_p$ is often represented in the Sobolev space $H^1(\Omega)$ or $L^2(\Omega)$, spaces in which point evaluations do not make sense. 
+In these cases, imposing such a constraint can render the variational problem ill-posed.
 
-Boundary conditions and forcing function are deduced from the exact solution
+\subsubsection{Computational benchmarks}
+
+In order to investigate the performance of each proposed method to solve the pure Neumann problem, we asses the convergence, accuracy, and efficiency of each method over a wide range of problem sizes and polynomial degrees $p$.
+We consider the analytical solution
 \begin{equation}
-    \delta_p^* = \frac{1}{3} \sin\left(-\frac{\pi}{2} x \right) \cos\left(2\pi y\right).
+    \deltap^* = \frac{1}{3} \sin\left(-\frac{\pi}{2} x \right) \cos\left(2\pi y\right),
 \end{equation}
-We consider the domain $\Omega = [-1, 1]^2$. By symmetry, we have that the exact solution $\delta_p^*$ is analytically zero-mean in the sense of equation (\ref{eq:mean_value_zero_condition}).
+(Figure \ref{fig:dp_neumann_problem_analytical}, left) with boundary conditions and forcing function deduced from the exact solution over the computational domain $\Omega = [-1, 1]^2$. 
+By symmetry, we have that the exact solution $\delta_p^*$ is analytically zero-mean in the sense of equation (\ref{eq:mean_value_zero_condition}).
 Additionally, the value of the boundary condition $g_N = \nabla \delta_p^* \cdot\bm{n}$ vanishes algebraically over the boundary $\partial \Omega$, imitating the boundary conditions imposed in the pressure corrector step.
-
 \begin{figure}[htpb]
   \centering
-  \includegraphics[width=0.5\linewidth]{img/dp_study_analytical.pdf}
-  \caption{Analytical solution of the pure Neumann problem}
+    \begin{subfigure}{0.45\textwidth}
+      \includegraphics[height=5.75cm]{img/dp_study_analytical.pdf} 
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[height=5cm]{img/PNP_32x32_errors.pdf}
+    \end{subfigure}
+      \caption{(Left) Analytical solution of the pure Neumann problem. 
+        (Right) Distribution of numerical errors in the gradient $\nabla\delta_p^* - \qdph$ over the computational domain for a mesh of $32\times 32$ elements at polynomial order $p=3$.}
   \label{fig:dp_neumann_problem_analytical}
 \end{figure}
+We consider a uniform Cartesian grid consisting of quadrilateral elements of length $L/2^{\ell}$ in each spatial dimension, where the integer $\ell = 0, 1, \ldots$ denotes the level of refinement.
+To assess the convergence of the primal unknown $\deltap$, the integral mean level of the numerical solution is subtracted as post-processing to agree with the analytical solution.
+All iterative solves are performed using conjugate gradient (CG) iterations to solve for the trace unknowns $\hat{\delta}_{p,h}$, from which the primal solution $\dph$ and its gradient $\bm{q}_{\deltap,h}$ are reconstructed.
+
+All three methods achieve optimal $p+1$ order convergence to the exact solution in both the primal $\dph$ and gradient $\qdph$ unknowns, respectively, before the iterative solver tolerance and finite-precision effects begin to pollute the convergence order. 
+Figure \ref{fig:INS:convergence_singular_system_projection} illustrates the convergence history of the primal unknown $\dph$ for the projection approach, and the errors and order of convergence in the $\LII$-norm are presented in tabular form in \ref{sec:convergence_history_pure_neumann}.
+In what follows, we demonstrate the subspace projection approach to be the computationally superior method; therefore, we present the convergence results for the projection method and omit the others for brevity. 
+
+An examination of the distribution of the errors in the numerical gradient over the computational domain (Figure \ref{fig:dp_neumann_problem_analytical}, right) illustrates that they are neither disproportionately large on the domain boundary, nor are they localized around a single point, problems that have been known to plague the penalization and point constraint methods, which depend on a specific choice of degree of freedom for their implementation \cite{bochev_finite_2005,guermond_overview_2006}.
+
 \begin{figure}[ht]
     \centering
     \begin{subfigure}{0.45\textwidth}
@@ -147,10 +170,12 @@ Additionally, the value of the boundary condition $g_N = \nabla \delta_p^* \cdot
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[height=7cm]{img/PNP_conv_2D_dofs.pdf}
     \end{subfigure}
-    \caption{Errors in the primal unknown $\left\lVert u - u_h \right\rVert_{\LII(\dom)} $ for the singular Neumann problem (2D) treated with subspace projection. Convergence is shown with respect to mesh size as well as number of globally-coupled unknowns. Optimal convergence is achieved for all polynomial orders.
+    \caption{Errors in the primal unknown $\left\lVert \delta_p^* - \dph \right\rVert_{\LII(\dom)} $ for the singular Neumann problem (2D) treated with subspace projection. Convergence is shown with respect to mesh size as well as number of globally-coupled unknowns. Optimal convergence is achieved for all polynomial orders.
     Convergence history data is tabulated in \ref{sec:convergence_history_pure_neumann}}
     \label{fig:INS:convergence_singular_system_projection}
 \end{figure}
+
+Given
 
 
 \begin{figure}[ht]
@@ -164,6 +189,9 @@ Additionally, the value of the boundary condition $g_N = \nabla \delta_p^* \cdot
     \caption{Performance comparisons of the different singularity treatments}
     \label{fig:PNP_treatment_performance}
 \end{figure}
+
+In conclusion, we have shown the subspace projection approach to be a stable, robust, and accurate method for numerically solving the singular system arising from the discretization of the pure Neumann problem occurring in the case of pure Dirichlet boundary conditions on the velocity.
+Furthermore, we have demonstrated it to be a superior method computationally, delivering better accuracy with a shorter time-to-solution than both the point-constraint and penalization approaches, without any external parameters to calibrate or imposition of a constraint to any particular degree of freedom.
 
 \section{Numerical experiments}
 \label{sec:numerical_experiments}
