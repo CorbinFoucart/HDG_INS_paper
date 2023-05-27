@@ -1,5 +1,4 @@
 
-
 \section{Implementation}%
 \label{sec:implementation_details}
 
@@ -129,6 +128,7 @@ into the linear system directly, avoiding the saddle point system that arises as
 \textbf{Point constraint.} An approach favored by many practitioners is to manually specify the value of the candidate solution at a single point by removing an equation from the discrete system and applying a Dirichlet constraint fixing the value of the solution at that point to an arbitrary constant, eliminating the null space and allowing solution of the linear system using a conventional direct solver.
 However, in a finite-element context, the function $\delta_p$ is often represented in the Sobolev space $H^1(\Omega)$ or $L^2(\Omega)$, spaces in which point evaluations do not make sense. 
 In these cases, imposing such a constraint can render the variational problem ill-posed.
+A typical manner of fixing this is to specify the value of the solution along a measurable subset of the domain; typically an element face; while this constraint is well-posed, it's also undesirable, because specifying that the value of the numerical solution along the face will change the character of the numerical solution and thus the physics.
 
 \subsubsection{Computational benchmarks}
 
@@ -157,10 +157,14 @@ To assess the convergence of the primal unknown $\deltap$, the integral mean lev
 All iterative solves are performed using conjugate gradient (CG) iterations to solve for the trace unknowns $\hat{\delta}_{p,h}$, from which the primal solution $\dph$ and its gradient $\bm{q}_{\deltap,h}$ are reconstructed.
 
 All three methods achieve optimal $p+1$ order convergence to the exact solution in both the primal $\dph$ and gradient $\qdph$ unknowns, respectively, before the iterative solver tolerance and finite-precision effects begin to pollute the convergence order. 
-Figure \ref{fig:INS:convergence_singular_system_projection} illustrates the convergence history of the primal unknown $\dph$ for the projection approach, and the errors and order of convergence in the $\LII$-norm are presented in tabular form in \ref{sec:convergence_history_pure_neumann}.
+Figure \ref{fig:INS:convergence_singular_system_projection} illustrates the convergence history of the primal unknown $\dph$ for the projection approach, both from the perspective of mesh resolution and in globally-coupled trace unknowns.
+The errors and orders of convergence in the $\LII$-norm are presented in tabular form in \ref{sec:convergence_history_pure_neumann}.
 In what follows, we demonstrate the subspace projection approach to be the computationally superior method; therefore, we present the convergence results for the projection method and omit the others for brevity. 
 
-An examination of the distribution of the errors in the numerical gradient over the computational domain (Figure \ref{fig:dp_neumann_problem_analytical}, right) illustrates that they are neither disproportionately large on the domain boundary, nor are they localized around a single point, problems that have been known to plague the penalization and point constraint methods, which depend on a specific choice of degree of freedom for their implementation \cite{bochev_finite_2005,guermond_overview_2006}.
+An examination of the spatial distribution of the errors in the numerical gradient\footnote{%
+We compute the directional error $\nabla \delta_p^* - \qdph$ over each element and plot the $x_1$-component. The results are similar for the gradient in the $x_2$ direction. We consider the gradient rather than the primal variable, because the gradient is the quantity that is used in the projection method detailed in \S\ref{sec:temporal_discretization}.
+}%
+over the computational domain (Figure \ref{fig:dp_neumann_problem_analytical}, right) illustrates that they are neither disproportionately large on the domain boundary, nor are they localized around a single point, problems that have been known to plague the penalization and point constraint methods, which depend on a specific choice of degree of freedom for their implementation \cite{bochev_finite_2005,guermond_overview_2006}.
 
 \begin{figure}[ht]
     \centering
@@ -175,26 +179,87 @@ An examination of the distribution of the errors in the numerical gradient over 
     \label{fig:INS:convergence_singular_system_projection}
 \end{figure}
 
-Given
-
+Given the comparable order of convergence to the analytical solution for all three approaches, we compare their relative computational advantages. 
+Reporting a condition number for the resultant linear system solved with each method is not feasible. 
+On one hand, the problem sizes reported in this work are large enough to make direct computation of the eigenvalue spectrum intractable.
+Moreover, as the subspace projection transformation is applied at each conjugate gradient iteration, there is not a single resultant linear system for which to compute a condition number.
+Therefore, as a practical indication of the conditioning of each algorithm, we examine the efficiency of the iterative solver.
+Figure \ref{fig:PNP_treatments_CG_iterations} shows the number of conjugate gradient iterations required to achieve convergence to the specified solver tolerance (without preconditioning) over a wide range of problem sizes.
+We observe that the point constraint and penalization methods require many more iterations to converge than the subspace projection approach across polynomial orders, typically between a factor of two and a factor of ten.
+Since the subspace projection requires removal of the mean at every conjugate gradient iteration and the other two methods do not, we also benchmark the performance of each algorithm in terms of the overall $\LII$-error in the primal solution variable as a function of the wall clock time to solution of the linear system for the trace unknown $\hat{\delta_p}_h$ in Figure \ref{fig:PNP_treatments_wall_time}.
+We observe that the subspace projection approach equals or outperforms the other two methods over a wide range of problem sizes, with the advantage increasing as a function of polynomial order.
 
 \begin{figure}[ht]
     \centering
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[height=7cm]{img/PNP_solver_iterations.pdf}
+        \caption{}
+        \label{fig:PNP_treatments_CG_iterations}
     \end{subfigure}
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[height=7cm]{img/PNP_treatment_wall_times.pdf}
+        \caption{}
+        \label{fig:PNP_treatments_wall_time}
     \end{subfigure}
-    \caption{Performance comparisons of the different singularity treatments}
+    \caption{Performance comparisons of the different singularity treatments.
+    (Left) Number of conjugate gradient iterations required for convergence for each method at different problem sizes and polynomial orders.
+    (Right) $\LII$-error achieved in the primal unknown $\dph$ as a function of wall clock time-to-solution of the global linear system for the trace unknown, shown at different problem sizes spanning from $10^1$ to $10^6$ trace degrees of freedom, and different polynomial orders.}
     \label{fig:PNP_treatment_performance}
 \end{figure}
 
-In conclusion, we have shown the subspace projection approach to be a stable, robust, and accurate method for numerically solving the singular system arising from the discretization of the pure Neumann problem occurring in the case of pure Dirichlet boundary conditions on the velocity.
-Furthermore, we have demonstrated it to be a superior method computationally, delivering better accuracy with a shorter time-to-solution than both the point-constraint and penalization approaches, without any external parameters to calibrate or imposition of a constraint to any particular degree of freedom.
+In conclusion, we have found the subspace projection approach to be a stable, robust, and accurate method for numerically solving the singular system arising from the discretization of the pure Neumann problem occurring in the case of pure Dirichlet boundary conditions on the velocity.
+Furthermore, we have demonstrated it to be a superior method computationally, delivering better accuracy with a shorter time-to-solution than both the point-constraint and penalization approaches, and without the need to calibrate any additional hyperparamters or to single out a particular problem degree of freedom for the imposition of a constraint.
 
 \section{Numerical experiments}
 \label{sec:numerical_experiments}
+
+\subsection{Verification}
+
+\subsubsection{Kovasnay flow}%
+\label{ssub:kovasnay_flow}
+
+
+Following \cite{hesthaven_nodal_2008}, to provide verification of the nonlinear, pressure, and viscous spatial derivatives independent of the temporal discretization, we test the method using the Kovasnay analytical solution to the Navier--Stokes equations.
+
+\begin{equation}
+  \begin{aligned}
+    \bm{u(\bm{x})} &= 
+    \begin{pmatrix}
+      1 - e^{\lambda x} \cos(2 \pi y) \\
+      \frac{\lambda}{2\pi} e^{\lambda x} \sin(2\pi y)
+    \end{pmatrix}, \qquad
+    p(\bm{x}) = \frac{1}{2} \left(1 - e^{2\lambda x}\right),
+  \end{aligned}
+  \label{eq:kovasnay_flow}
+\end{equation}
+where the parameter 
+\begin{equation}
+\lambda = \frac{1}{2\nu} - \sqrt{\frac{1}{4\nu^2} + 4\pi^2}.
+\end{equation}
+
+We consider a domain $\Omega = [-0.5,1]\times [-0.5, 1.5]$ with the domain boundary consisting of inflow and outflow segments $\bnd = \bndIn\cup \bndOut$ with $\bndOut = \left\{\bm{x}\mid x_1 = 1\right\}$. 
+For the velocity field, Dirichlet boundary conditions on the velocity field at the inflow boundary $\bndIn$ and Neumann boundary conditions at the outflow boundary $\bndOut$ are deduced from the exact solution. 
+Similarly, the exact solution provides the directional derivative normal to the boundary for the Neumann pressure boundary condition at the inflow boundaries $\bndIn$ and the Dirichlet boundary conditions on the pressure at the outflow. 
+These boundary conditions are summarized in Table \ref{tab:Kovasnay_BCs}. \\
+
+\begin{table}[htpb]
+  \centering
+  \begin{tabular}{ccc}
+  \hline
+    & $\bndIn = \bnd \setminus \bndOut$ & $\bndOut = \bnd \cap \left\{\bm{x}\colon x_1 = 1\right\}$ \\
+  \hline
+  $\bm{u}$ & $\bm{g_D} = \bm{u}(\bm{x})$ & $\bm{g_N} = \nabla \bm{u}\cdot\bm{n}$ \\
+  $\bm{p}$ & $g_N = \nabla p\cdot\bm{n}$ & $g_D = p(\bm{x})$ \\
+  \hline
+  \end{tabular}
+  \caption{Summary of boundary conditions \S\ref{ssub:kovasnay_flow}.}
+  \label{tab:Kovasnay_BCs}
+\end{table}
+
+The simulation is performed for one time integration step with viscosity parameter $\nu = 1/40$.
+
+\subsection{Vortex flow}
+Spatial convergence test, temporal convergence test
 
 \subsection{Unsteady Stokes Flow}
 
@@ -228,8 +293,6 @@ In \cite{fehn_stability_2017}, we have
 \end{equation}
 where $\lambda = \nu(1 + a^2)$ $\nu = 1$ and $a = 2.883356$ on a domain of  $\Omega = [-1, 1]^2$; they take $[0, T] = [0, 0.1]$ and Dirichlet boundary conditions everywhere, $\Gamma = \Gamma_D$.
 
-\subsection{Verification}
-Spatial convergence test, temporal convergence test
 
 
 
@@ -237,6 +300,7 @@ Spatial convergence test, temporal convergence test
 \subsection{Taylor-Green vortex flow}
 Is this the same test case as in Hesthaven?
 
+\subsection{Pipe flow}
 \subsection{Backward facing step}
 
 \subsection{Lid-driven cavity flow}
