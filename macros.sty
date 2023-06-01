@@ -1,11 +1,11 @@
-\renewcommand{\(}{\begin{equation}}
-\renewcommand{\)}{\end{equation}}
+% graphics
 \ifpdf
 \DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
 \else
 \DeclareGraphicsExtensions{.eps}
 \fi 
 
+% math general
 %\newtheorem{lemma}{Lemma}
 %\newtheorem{corollary}{Corollary}
 %\newtheorem{proposition}{Proposition}
@@ -17,16 +17,13 @@
 %\crefname{figure}{Figure}{Figs.}
 %\crefname{chapter}{chapter}{chapters}
 %\crefname{equation}{}{}
+\DeclareMathOperator{\diag}{diag}
+\newcommand{\nullspace}{{\mathcal N}}
+\newcommand{\reals}{{\mbox{\bf R}}}
+\newcommand{\ones}{\mathbf 1}
 
+% domain, geometry
 \newcommand{\Th}{\mathcal{T}_h}
-% DG integrals, jumps 
-\newcommand{\Iint}[3]{\left(#1 ,\, #2 \right)_{#3}}
-\newcommand{\IintK}[2]{\Iint{#1}{#2}{\gls{K}}}
-\newcommand{\Eint}[3]{\left\langle #1 ,\, #2 \right\rangle_{#3}}
-\newcommand{\EintK}[2]{\Eint{#1}{#2}{\partial K}}
-\newcommand{\jmp}[1]{\llbracket #1 \rrbracket}
-\newcommand{\mean}[1]{\left\{\!\left\{#1\right\}\!\right\}}
-\newcommand{\nrml}{\hat{\mathbf n}}
 \newcommand{\LII}{L^2}
 \newcommand{\dom}{\Omega}
 \newcommand{\bnd}{\partial\Omega}
@@ -34,6 +31,17 @@
 \newcommand{\bndD}{\Gamma_{D}}
 \newcommand{\bndIn}{\Gamma_{\text{in}}}
 \newcommand{\bndOut}{\Gamma_{\text{out}}}
+
+% DG integrals, jumps, FEM ops
+\newcommand{\Iint}[3]{\left(#1 ,\, #2 \right)_{#3}}
+\newcommand{\IintK}[2]{\Iint{#1}{#2}{\gls{K}}}
+\newcommand{\Eint}[3]{\left\langle #1 ,\, #2 \right\rangle_{#3}}
+\newcommand{\EintK}[2]{\Eint{#1}{#2}{\partial K}}
+\newcommand{\jmp}[1]{\llbracket #1 \rrbracket}
+\newcommand{\mean}[1]{\left\{\!\left\{#1\right\}\!\right\}}
+\newcommand{\nrml}{\hat{\mathbf n}}
+\newcommand{\intk}[1]{\left(#1 \right)_K}
+\newcommand{\intdk}[1]{\left \langle #1 \right \rangle_{\partial K}}
 
 % variables
 \newcommand{\vel}{\bm{u}}
@@ -48,14 +56,7 @@
 \newcommand{\erroru}{\text{e}_{\velh}}
 \newcommand{\errorp}{\text{e}_{\ph}}
 
-\newcommand{\intk}[1]{\left(#1 \right)_K}
-\newcommand{\intdk}[1]{\left \langle #1 \right \rangle_{\partial K}}
-\DeclareMathOperator{\diag}{diag}
-\newcommand{\nullspace}{{\mathcal N}}
-\newcommand{\reals}{{\mbox{\bf R}}}
-\newcommand{\ones}{\mathbf 1}
-
-% restriction operator
+% restriction operator, misc
 \newcommand\restr[2]{{ % we make the whole thing an ordinary symbol
   \left.\kern-\nulldelimiterspace % automatically resize the bar with \right
   #1 % the function
@@ -63,9 +64,9 @@
   \right|_{#2} % this is the delimiter
   }}
 
+% textual, English, annotation
 \newcommand{\cf}{{\it cf.}}
 \newcommand{\eg}{{\it e.g.}}
 \newcommand{\ie}{{\it i.e.}}
 \newcommand{\etc}{{\it etc.}}
-
 \newcommand{\todo}[1]{{\color{blue}#1}}

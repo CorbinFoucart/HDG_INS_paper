@@ -1,7 +1,6 @@
+\section{Implementation} \label{sec:implementation_details}
 
-\section{Implementation}%
-\label{sec:implementation_details}
-
+% implementation details
 The finite element forward models were implemented in \texttt{C++} and make use of the finite element library \texttt{deal.ii} \cite{dealII93}.
 
 \todo{
@@ -20,7 +19,6 @@ Unless explicitly specified, the abbreviations $\erroru$ and $\errorp$ refer to 
 Similarly, unless otherwise specified, all iterative solver tolerances are specified to a relative error of $10^{-12}$ and an absolute error of 
 
 The iterative solvers used in the subsequent test cases use a relative solver tolerance of $10^{-8}$ and an absolute solver tolerance of $10^{-12}$ as tolerance criteria for all system of equations to be solved, unless otherwise specified.
-
 
 \subsection{Computational considerations}
 \label{sec:computational}
@@ -79,7 +77,6 @@ We evaluate the assembly times using both serial and parallelized assembly.
 
 It turns out that for one-dimensional problems using any polynomial order less than or equal to $p=10$, it is far more efficient to perform assembly in serial as opposed to in parallel using multi-threading.
 This is because the problem dimension leads to element-local systems small enough that the synchronization work between the threads to prevent a race condition copying into the global linear system is much larger than the actual work on the cell.
-
 
 
 \subsection{Matrix-free solvers}%
@@ -210,8 +207,7 @@ We observe that the subspace projection approach equals or outperforms the other
 In conclusion, we have found the subspace projection approach to be a stable, robust, and accurate method for numerically solving the singular system arising from the discretization of the pure Neumann problem occurring in the case of pure Dirichlet boundary conditions on the velocity.
 Furthermore, we have demonstrated it to be a superior method computationally, delivering better accuracy with a shorter time-to-solution than both the point-constraint and penalization approaches, and without the need to calibrate any additional hyperparamters or to single out a particular problem degree of freedom for the imposition of a constraint.
 
-\section{Numerical experiments}
-\label{sec:numerical_experiments}
+\section{Numerical experiments} \label{sec:numerical_experiments}
 
 \subsection{Verification}
 
@@ -294,17 +290,12 @@ In \cite{fehn_stability_2017}, we have
 where $\lambda = \nu(1 + a^2)$ $\nu = 1$ and $a = 2.883356$ on a domain of  $\Omega = [-1, 1]^2$; they take $[0, T] = [0, 0.1]$ and Dirichlet boundary conditions everywhere, $\Gamma = \Gamma_D$.
 
 
-
-
-
 \subsection{Taylor-Green vortex flow}
 Is this the same test case as in Hesthaven?
 
 \subsection{Pipe flow}
 \subsection{Backward facing step}
-
 \subsection{Lid-driven cavity flow}
-
 \subsection{Lock Exchange?}
 \subsection{Lab RTI flow?}
 

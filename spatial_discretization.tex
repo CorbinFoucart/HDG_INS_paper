@@ -1,5 +1,4 @@
 \section{Spatial discretization}
-
 \subsection{Notation}
 Boilerplate
 
@@ -8,9 +7,12 @@ boilerplate
 
 \subsection{HDG Pressure-correction scheme}
 
-The choice of spatial discretization for the pressure gradient terms and the velocity divergence term is of central importance to the stability and robustness of the projection schemes in \cite{fehn_robust_2018}. Previous work in \cite{ueckermann_lermusiaux_JCP2016} conducted limited investigation of the discretization of these terms as they appeared in HDG discretizations of projection methods. This motivates the present work in determining whether the discretization of these two terms is similarly important to the robustness of HDG schemes. 
+The choice of spatial discretization for the pressure gradient terms and the velocity divergence term is of central importance to the stability and robustness of the projection schemes in \cite{fehn_robust_2018}.
+Previous work in \cite{ueckermann_lermusiaux_JCP2016} conducted limited investigation of the discretization of these terms as they appeared in HDG discretizations of projection methods.
+This motivates the present work in determining whether the discretization of these two terms is similarly important to the robustness of HDG schemes. 
 
-The point of departure for HDG schemes is to write each semi-discretized PDE as a first-order system, which we do for the velocity predictor equation (\ref{eq:PDE_velocity_predictor})  and pressure correction equation (\ref{eq:PDE_pressure_corrector}). The projection step does not require an implicit formulation and is computed directly.
+The point of departure for HDG schemes is to write each semi-discretized PDE as a first-order system, which we do for the velocity predictor equation (\ref{eq:PDE_velocity_predictor})  and pressure correction equation (\ref{eq:PDE_pressure_corrector}).
+The projection step does not require an implicit formulation and is computed directly.
 
 \subsubsection{HDG formulation of explicit operators}
 
